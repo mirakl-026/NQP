@@ -59,7 +59,16 @@ class NQP_solver
         List<string> result = new List<string>();
 
         NQP_field f = new NQP_field(8);
-        f.SetQueenInPosition(0, 0);
+
+        //f.SetQueenInPosition(0, 0);
+        //f.SetQueenInPosition(1, 2);
+        //f.SetQueenInPosition(2, 4);
+        //f.SetQueenInPosition(3, 6);
+        //f.SetQueenInPosition(4, 1);
+        //f.SetQueenInPosition(5, 3);
+        //f.SetQueenInPosition(6, 5);
+        //f.SetQueenInPosition(7, 7);
+
         f.ShowField();       
 
 
@@ -106,7 +115,7 @@ class NQP_field
         if (checkQueenPosition(x, y) == true)
         {
             field[x, y] = 1;
-            queens[y] = x;
+            queens[y] = x+1;
             SetBlocks();
             return true;
         }
@@ -119,7 +128,58 @@ class NQP_field
     // заполнение блокировок на установку ферзей
     private void SetBlocks ()
     {
+        for (int i = 0; i < fieldSize; i++)
+        {
+            if (queens[i] != 0)
+            {
+                int currentQueenRaw = queens[i]-1;
+                int currentQueenCol = i;
 
+                // заблокировать горизонталь
+                for (int j = 0; j<fieldSize; j++)
+                {
+                    if (j != currentQueenCol)
+                    {
+                        field[currentQueenRaw, j] = 2;
+                    }
+                }
+
+                // заблокировать вертикаль
+                for (int j = 0; j<fieldSize; j++)
+                {
+                    if (j != currentQueenRaw)
+                    {
+                        field[j, currentQueenCol] = 2;
+                    }
+                }
+
+                // заблокировать диагональ - слева-вверх
+                for (int j = -1; (currentQueenCol+j >= 0) && (currentQueenRaw+j >= 0); j--)
+                {
+                    field[currentQueenRaw + j, currentQueenCol + j] = 2;
+                }
+
+                // заблокировать диагональ - справа-вниз
+                for (int j = 1; (currentQueenCol + j < fieldSize) && (currentQueenRaw + j < fieldSize); j++)
+                {
+                    field[currentQueenRaw + j, currentQueenCol + j] = 2;
+                }
+
+                // заблокировать диагональ - слева-вниз
+                for (int j = -1; (currentQueenCol + j >= 0) && (currentQueenRaw - j < fieldSize); j--)
+                {
+                    field[currentQueenRaw - j, currentQueenCol + j] = 2;
+                }
+
+                // заблокировать диагональ - справа-вверх
+                for (int j = -1; (currentQueenCol - j < fieldSize) && (currentQueenRaw + j >= 0); j--)
+                {
+                    field[currentQueenRaw + j, currentQueenCol - j] = 2;
+                }
+
+
+            }
+        }
     }
 
     public bool checkQueenPosition(int x, int y)
@@ -147,6 +207,7 @@ class NQP_field
         {
             Console.Write(q.ToString() + ",");
         }
+        Console.WriteLine();
         Console.WriteLine();
 
         // поле
