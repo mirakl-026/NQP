@@ -58,16 +58,16 @@ class NQP_solver
     {
         List<string> result = new List<string>();
 
-        NQP_field f = new NQP_field(8);
+        NQP_field f = new NQP_field(GridSize);
 
-        //f.SetQueenInPosition(0, 0);
-        //f.SetQueenInPosition(1, 2);
-        //f.SetQueenInPosition(2, 4);
-        //f.SetQueenInPosition(3, 6);
-        //f.SetQueenInPosition(4, 1);
-        //f.SetQueenInPosition(5, 3);
-        //f.SetQueenInPosition(6, 5);
-        //f.SetQueenInPosition(7, 7);
+        f.SetQueenInPosition(0, 4);
+        f.SetQueenInPosition(1, 6);
+        f.SetQueenInPosition(2, 0);
+        f.SetQueenInPosition(3, 3);
+        f.SetQueenInPosition(4, 1);
+        f.SetQueenInPosition(5, 7);
+        f.SetQueenInPosition(6, 5);
+        f.SetQueenInPosition(7, 2);
 
         f.ShowField();       
 
@@ -115,7 +115,7 @@ class NQP_field
         if (checkQueenPosition(x, y) == true)
         {
             field[x, y] = 1;
-            queens[y] = x+1;
+            queens[x] = y+1;
             SetBlocks();
             return true;
         }
@@ -132,8 +132,8 @@ class NQP_field
         {
             if (queens[i] != 0)
             {
-                int currentQueenRaw = queens[i]-1;
-                int currentQueenCol = i;
+                int currentQueenRaw = i;
+                int currentQueenCol = queens[i] - 1;
 
                 // заблокировать горизонталь
                 for (int j = 0; j<fieldSize; j++)
@@ -211,11 +211,11 @@ class NQP_field
         Console.WriteLine();
 
         // поле
-        for (int i = 0; i < fieldSize; i++)
+        for (int y = 0; y < fieldSize; y++)
         {
-            for (int j = 0; j < fieldSize; j++)
+            for (int x = 0; x < fieldSize; x++)
             {
-                Console.Write(field[i, j] + ",");
+                Console.Write(field[x, y] + ",");
             }
             Console.WriteLine();
         }
