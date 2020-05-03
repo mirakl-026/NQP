@@ -59,7 +59,7 @@ class NQP_solver
         List<string> result = new List<string>();
 
         NQP_field f = new NQP_field(8);
-        f.SetPosition(0, 0);
+        f.SetQueenInPosition(0, 0);
         f.ShowField();       
 
 
@@ -85,6 +85,9 @@ class NQP_field
     // сам двумерный массив поля
     public int[,] field;
 
+    // позиции ферзей
+    public int[] queens;
+
     // статус поля - если обнаружена полностью заблокированная строка - решение неправильное
     public bool fieldStatus = true;
 
@@ -92,13 +95,18 @@ class NQP_field
     {
         fieldSize = size;
         field = new int[size,size];
+        queens = new int[size];
     }
 
-    public bool SetPosition(int x, int y)
+    // установить ферзя в позицию Х, У
+    // возвращает true если ферзь успешно установлен
+    // возвращает false если в данную позицию нельзя установить ферзя
+    public bool SetQueenInPosition(int x, int y)
     {
-        if (checkPosition(x, y) == true)
+        if (checkQueenPosition(x, y) == true)
         {
             field[x, y] = 1;
+            queens[y] = x;
             SetBlocks();
             return true;
         }
@@ -108,18 +116,40 @@ class NQP_field
         }        
     }
 
+    // заполнение блокировок на установку ферзей
     private void SetBlocks ()
     {
 
     }
 
-    public bool checkPosition(int x, int y)
+    public bool checkQueenPosition(int x, int y)
     {
-        return true;
+        if ( (x >= 0 && x < fieldSize) &&
+             (y >= 0 && y < fieldSize))
+        {
+            if (field[x,y] != 2)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        return false;
     }
 
     public void ShowField()
     {
+        // ферзи
+        Console.Write("Queens: ");
+        foreach (var q in queens)
+        {
+            Console.Write(q.ToString() + ",");
+        }
+        Console.WriteLine();
+
+        // поле
         for (int i = 0; i < fieldSize; i++)
         {
             for (int j = 0; j < fieldSize; j++)
