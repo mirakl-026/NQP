@@ -20,71 +20,97 @@ namespace NQP_mine
             //Console.Write("Кол-во решений: ");
             //int solutionsCount = Int32.Parse(Console.ReadLine());
 
-            NQP_solver nqps = new NQP_solver();
+            //NQP_solver nqps = new NQP_solver();
 
-            nqps.Solve();
+            //nqps.Solve();
 
+            NQPsolver nqps = new NQPsolver(8);
+            nqps.NextRaw(new List<int>());
+            
+            foreach(var result in nqps.results)
+            {
+                Console.WriteLine(result);
+            }
 
         }
     }
 }
 
-class NQP_solver
+
+class NQPsolver
 {
-    // размерность сетки
-    public int GridSize { get; set; }
+    public int gridSize;
 
-    // необходимо ко-во решений
-    public int SolutionsCount { get; set; }
+    public List<string> results;
 
-    public NQP_solver()
+    public NQPsolver(int size)
     {
-        GridSize = 8;
-        SolutionsCount = 1;
+        gridSize = size;
+        results = new List<string>();
     }
 
-    public NQP_solver(int gs)
+    //
+    public void NextRaw(List<int> currentRaw)
     {
-        GridSize = gs;
-    }
-
-    public NQP_solver(int gs, int sc)
-    {
-        SolutionsCount = sc;
-    }
-
-    // метод решения
-    public List<string> Solve()
-    {
-        List<string> result = new List<string>();
-
-        NQP_field f = new NQP_field(GridSize);
-
-        f.SetQueenInPosition(0, 4);
-        f.SetQueenInPosition(1, 6);
-        f.SetQueenInPosition(2, 0);
-        f.SetQueenInPosition(3, 3);
-        f.SetQueenInPosition(4, 1);
-        f.SetQueenInPosition(5, 7);
-        f.SetQueenInPosition(6, 5);
-        f.SetQueenInPosition(7, 2);
-
-        f.ShowField();       
-
-
-        return new List<string>();
-    }
-
-    private string ConvertSolutionToString (int[] solution)
-    {
-        string result = "";
-        foreach(var pos in solution)
+        if (currentRaw.Count == gridSize)
         {
-            result += pos.ToString() + ",";
+            string newResult = "";
+            foreach (var qp in currentRaw)
+            {
+                newResult += (qp+1).ToString() + ",";
+            }
+            results.Add(newResult);
         }
-        return result;
+        else
+        {
+            List<int> NextSolutions = RawHasNextSolutions(currentRaw);
+            if (NextSolutions != null && NextSolutions.Count > 0)
+            {
+                foreach (var nextSolution in NextSolutions)
+                {
+                    List<int> newCurrentRaw = new List<int>(currentRaw);
+                    newCurrentRaw.Add(nextSolution);
+                    NextRaw(newCurrentRaw);
+                }
+            }
+        }
+    }
+
+    // проверка на наличие следующих решений
+    public List<int> RawHasNextSolutions(List<int> currentRaw)
+    {
+        // получить список возможных решений
+        List<int> possibleSolutions = new List<int>(gridSize - currentRaw.Count);
+        List<int> resultSolutions = new List<int>(gridSize - currentRaw.Count);
+        for (int i = 0; i < gridSize; i++)
+        {
+            if (currentRaw.Contains(i) != true)
+            {
+                possibleSolutions.Add(i);
+            }
+        }
+
+        // провереям возможные решения
+        int nextX = currentRaw.Count;
+        foreach (var possibleSolution in possibleSolutions)
+        {
+            // проверить возможность решений - блокировки с предыдущих уровней
+            // заполняем поле
+            NQP_field nf = new NQP_field(gridSize);
+            for (int i = 0; i < currentRaw.Count; i++)
+            {
+                nf.SetQueenInPosition(i, currentRaw[i]);
+            }
+
+            if (nf.SetQueenInPosition(nextX, possibleSolution) == true)
+            {
+                resultSolutions.Add(possibleSolution);
+            }
+        }
+        return resultSolutions;
     }
 }
+
 
 class NQP_field
 {
@@ -100,11 +126,18 @@ class NQP_field
     // статус поля - если обнаружена полностью заблокированная строка - решение неправильное
     public bool fieldStatus = true;
 
-    public NQP_field (int size)
+    public NQP_field(int size)
     {
         fieldSize = size;
-        field = new int[size,size];
+        field = new int[size, size];
         queens = new int[size];
+    }
+
+    public NQP_field(int size, int[,] data, int[] qData)
+    {
+        fieldSize = size;
+        field = data;
+        queens = qData;
     }
 
     // установить ферзя в позицию Х, У
@@ -115,18 +148,18 @@ class NQP_field
         if (checkQueenPosition(x, y) == true)
         {
             field[x, y] = 1;
-            queens[x] = y+1;
+            queens[x] = y + 1;
             SetBlocks();
             return true;
         }
         else
         {
             return false;
-        }        
+        }
     }
 
     // заполнение блокировок на установку ферзей
-    private void SetBlocks ()
+    private void SetBlocks()
     {
         for (int i = 0; i < fieldSize; i++)
         {
@@ -136,7 +169,7 @@ class NQP_field
                 int currentQueenCol = queens[i] - 1;
 
                 // заблокировать горизонталь
-                for (int j = 0; j<fieldSize; j++)
+                for (int j = 0; j < fieldSize; j++)
                 {
                     if (j != currentQueenCol)
                     {
@@ -145,7 +178,7 @@ class NQP_field
                 }
 
                 // заблокировать вертикаль
-                for (int j = 0; j<fieldSize; j++)
+                for (int j = 0; j < fieldSize; j++)
                 {
                     if (j != currentQueenRaw)
                     {
@@ -154,7 +187,7 @@ class NQP_field
                 }
 
                 // заблокировать диагональ - слева-вверх
-                for (int j = -1; (currentQueenCol+j >= 0) && (currentQueenRaw+j >= 0); j--)
+                for (int j = -1; (currentQueenCol + j >= 0) && (currentQueenRaw + j >= 0); j--)
                 {
                     field[currentQueenRaw + j, currentQueenCol + j] = 2;
                 }
@@ -184,10 +217,10 @@ class NQP_field
 
     public bool checkQueenPosition(int x, int y)
     {
-        if ( (x >= 0 && x < fieldSize) &&
+        if ((x >= 0 && x < fieldSize) &&
              (y >= 0 && y < fieldSize))
         {
-            if (field[x,y] != 2)
+            if (field[x, y] != 2)
             {
                 return true;
             }
